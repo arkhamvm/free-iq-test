@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Бесплатный IQ-тест</title>
+  <meta name="description" content="Бесплатный онлайн IQ-тест: 30 заданий на логику, числовые ряды и визуальные матрицы. Без регистрации и без оплаты результата.">
+  <meta name="theme-color" content="#4f46e5">
+  <meta property="og:title" content="Бесплатный IQ-тест">
+  <meta property="og:description" content="30 заданий, 25 минут, результат сразу и бесплатно.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A7%A0%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="./">🧠 Free IQ Test</a>
+    <div class="timer" id="timer" hidden aria-live="off">25:00</div>
+  </header>
+
+  <main id="app">
+    <!-- Стартовый экран -->
+    <section id="screen-start" class="screen card">
+      <h1>Бесплатный IQ-тест</h1>
+      <p class="lead">Проверьте логику, внимание и умение находить закономерности. Результат вы увидите сразу, без регистрации и без оплаты.</p>
+      <ul class="facts">
+        <li><strong>30</strong> заданий</li>
+        <li><strong>25</strong> минут</li>
+        <li><strong>5</strong> типов задач</li>
+      </ul>
+      <ul class="rules">
+        <li>Выберите один вариант ответа в каждом задании.</li>
+        <li>Задания можно пропускать и возвращаться к ним.</li>
+        <li>Сложные задания приносят больше баллов.</li>
+        <li>Когда время закончится, тест завершится автоматически.</li>
+        <li>Можно отвечать с клавиатуры: цифры 1–6, стрелки ← →.</li>
+      </ul>
+      <div class="actions">
+        <button class="btn primary" id="btn-start">Начать тест</button>
+        <button class="btn" id="btn-resume" hidden>Продолжить начатый тест</button>
+      </div>
+      <p class="note">Это развлекательный тест. Он не заменяет профессиональную психологическую диагностику.</p>
+    </section>
+
+    <!-- Экран вопроса -->
+    <section id="screen-quiz" class="screen" hidden>
+      <div class="progress" aria-hidden="true"><div class="progress-bar" id="progress-bar"></div></div>
+      <div class="card">
+        <div class="q-meta">
+          <span id="q-counter">Вопрос 1 из 30</span>
+          <span id="q-category" class="tag"></span>
+        </div>
+        <h2 id="q-text" class="q-text"></h2>
+        <div id="q-matrix" class="matrix" hidden></div>
+        <div id="q-options" class="options" role="radiogroup"></div>
+        <div class="nav">
+          <button class="btn" id="btn-prev">← Назад</button>
+          <button class="btn primary" id="btn-next">Далее →</button>
+        </div>
+      </div>
+      <details class="card qmap-wrap">
+        <summary>Карта вопросов</summary>
+        <div id="qmap" class="qmap"></div>
+        <button class="btn danger" id="btn-finish">Завершить тест</button>
+      </details>
+    </section>
+
+    <!-- Результат -->
+    <section id="screen-result" class="screen" hidden>
+      <div class="card result">
+        <p class="result-label">Ваш примерный IQ</p>
+        <div class="iq" id="r-iq">100</div>
+        <p class="result-level" id="r-level"></p>
+        <div class="bell" id="r-bell"></div>
+        <p id="r-summary"></p>
+        <div class="stats">
+          <div><strong id="r-correct">0</strong><span>правильных</span></div>
+          <div><strong id="r-percentile">0</strong><span>процентиль</span></div>
+          <div><strong id="r-time">0:00</strong><span>время</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>По типам заданий</h3>
+        <div id="r-categories" class="cats"></div>
+      </div>
+      <div class="actions center">
+        <button class="btn primary" id="btn-review">Разбор ответов</button>
+        <button class="btn" id="btn-share">Поделиться</button>
+        <button class="btn" id="btn-restart">Пройти заново</button>
+      </div>
+      <p class="note center" id="share-status" aria-live="polite"></p>
+      <p class="note center">Результат — грубая оценка по 30 заданиям. Он не является клиническим измерением интеллекта.</p>
+      <div id="review" class="review" hidden></div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>Бесплатно и с открытым кодом. Ответы не отправляются на сервер.</p>
+  </footer>
+
+  <script src="js/questions.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
