@@ -1,52 +1,56 @@
-# Бесплатный IQ-тест
+# Free IQ Test
 
-Статический IQ-тест на чистом HTML, CSS и JavaScript. Без сборки, без зависимостей и без сервера: всё работает в браузере, ответы никуда не отправляются.
+A free, static IQ test written in plain HTML, CSS and JavaScript. No build step, no dependencies and no server: everything runs in the browser and answers are never sent anywhere. Ready to host on GitHub Pages.
 
-## Что внутри
+The interface is currently in Russian.
 
-Три теста на выбор (по умолчанию «Быстрый»):
+## Tests
 
-| Тест | Заданий | Время | Что внутри |
+Three tests to choose from (Quick is the default):
+
+| Test | Questions | Time | Content |
 |---|---|---|---|
-| Быстрый | 30 | 25 мин | ряды чисел и букв, слова, логика, матрицы |
-| Смешанный | 40 | 30 мин | то же, больше рядов и заданий со словами |
-| Матрицы | 60 | 40 мин | 5 серий невербальных матриц от простых к сложным |
+| Quick | 30 | 25 min | number and letter series, words, logic, matrices |
+| Mixed | 40 | 30 min | the same types, with more series and word tasks |
+| Matrices | 60 | 40 min | 5 series of non-verbal matrices, from easy to hard |
 
-Все задания оригинальные. Тесты сделаны по мотивам классических форматов, но не повторяют их.
+All questions are original. The tests are inspired by classic IQ test formats but do not copy them.
 
-- **Случайный набор при каждой попытке.** «Быстрый» и «Смешанный» берут задания из общего банка (`js/bank/`) с квотами по типам и сложности, так что попытки сравнимы. Матрицы каждый раз генерируются заново (`js/generator.js`) по фиксированным правилам и кривой сложности.
-- Таймер; по его окончании тест завершается автоматически.
-- Прогресс сохраняется в `localStorage`: набор восстанавливается по зерну, тест можно продолжить после перезагрузки.
-- Результат: оценка IQ, процентиль, график нормального распределения, разбивка по типам заданий и разбор ответов с объяснениями.
-- «Поделиться»: картинка в мобильном формате с результатом и ссылкой. На телефоне открывается системное меню (картинка и текст сразу уходят в мессенджер), на компьютере — панель со скачиванием картинки и ссылками на Telegram, WhatsApp и ВКонтакте.
-- Вёрстка для телефона, планшета и компьютера; светлая и тёмная тема по настройке системы; управление с клавиатуры (1–8, ← →).
+## Features
 
-## Как считается результат
+- **A random set on every attempt.** Quick and Mixed draw questions from a shared bank (`js/bank/`) with fixed quotas per question type and difficulty, so attempts stay comparable. Matrices are generated fresh each time (`js/generator.js`) from fixed rules and a fixed difficulty curve.
+- A countdown timer; the test finishes automatically when time runs out.
+- Progress is saved in `localStorage`. The question set is restored from its seed, so a test can be resumed after a reload.
+- Results: estimated IQ, percentile, a normal distribution chart, a breakdown by question type and a review of every answer with an explanation.
+- **Share:** builds a mobile-format image with the result and a link to the test. On phones it opens the system share sheet, so the image and text go straight to a messenger. On desktop it shows a panel to download the image, plus Telegram, WhatsApp and VK links.
+- Responsive layout for phone, tablet and desktop; light and dark themes follow the system setting; keyboard controls (1–8 to answer, ← → to navigate).
 
-Задания имеют вес 1–3 в зависимости от сложности. Доля набранных баллов переводится в шкалу IQ со средним 100 и σ = 15, исходя из допущения, что средний человек набирает около половины баллов. Итог ограничен диапазоном 55–145. Это развлекательная оценка, а не клиническое измерение.
+## Scoring
 
-## Запуск локально
+Each question is worth 1–3 points depending on difficulty. The share of points earned is mapped to an IQ scale with mean 100 and SD 15, assuming an average person scores about half of the points. The result is clamped to 55–145. This is an entertainment estimate, not a clinical measurement.
+
+## Run locally
 
 ```sh
 python3 -m http.server 8000
-# открыть http://localhost:8000
+# open http://localhost:8000
 ```
 
-## Публикация на GitHub Pages
+## Deploy to GitHub Pages
 
-1. Settings → Pages.
-2. Source: **Deploy from a branch**, ветка `main`, папка `/ (root)`.
-3. Через минуту сайт будет доступен по адресу `https://<логин>.github.io/free-iq-test/`.
+1. Open Settings → Pages.
+2. Source: **Deploy from a branch**, branch `main`, folder `/ (root)`.
+3. After a minute the site is live at `https://<username>.github.io/free-iq-test/`.
 
-## Структура
+## Project structure
 
 ```
-index.html          разметка экранов
-css/style.css       стили (светлая и тёмная тема, адаптивная вёрстка)
-js/generator.js     генератор матричных заданий
-js/bank/*.js        банк текстовых заданий
-js/tests.js         описание тестов и сборка случайного набора
-js/app.js           логика теста, таймер, подсчёт, результат, «Поделиться»
+index.html          screen markup
+css/style.css       styles (light and dark theme, responsive layout)
+js/generator.js     matrix question generator
+js/bank/*.js        bank of text questions
+js/tests.js         test definitions and random set sampling
+js/app.js           test flow, timer, scoring, results, sharing
 ```
 
-Чтобы добавить задание, допишите объект в любой файл `js/bank/` (поля описаны в начале `js/bank/classic.js`).
+To add a question, append an object to any file in `js/bank/` (the fields are described at the top of `js/bank/classic.js`).

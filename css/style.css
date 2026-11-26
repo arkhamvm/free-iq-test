@@ -202,8 +202,15 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; }
   .test-card .t-badge { font-size: .65rem; padding: 1px 6px; }
 }
 @media (max-width: 420px) {
-  .test-card .t-name { font-size: .85rem; overflow-wrap: anywhere; }
+  .test-card { padding: 8px 6px; }
+  .test-card .t-name { font-size: .8rem; }
   .test-card .t-meta { font-size: .72rem; }
+}
+@media (max-width: 380px) {
+  .picker { gap: 4px; }
+  .test-card { padding: 8px 4px; }
+  .test-card .t-name { font-size: .72rem; }
+  .test-card .t-badge { font-size: .58rem; }
 }
 .options.visual.eight { grid-template-columns: repeat(4, 1fr); }
 @media (max-width: 520px) {
