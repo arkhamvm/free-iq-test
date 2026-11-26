@@ -4,10 +4,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Бесплатный IQ-тест</title>
-  <meta name="description" content="Бесплатный онлайн IQ-тест: 30 заданий на логику, числовые ряды и визуальные матрицы. Без регистрации и без оплаты результата.">
+  <meta name="description" content="Бесплатный онлайн IQ-тест: три теста на выбор: логика, числовые ряды и визуальные матрицы. Без регистрации и без оплаты результата.">
   <meta name="theme-color" content="#4f46e5">
   <meta property="og:title" content="Бесплатный IQ-тест">
-  <meta property="og:description" content="30 заданий, 25 минут, результат сразу и бесплатно.">
+  <meta property="og:description" content="Три теста на выбор, результат сразу и бесплатно.">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A7%A0%3C/text%3E%3C/svg%3E">
   <link rel="stylesheet" href="css/style.css">
 </head>
@@ -22,17 +22,16 @@
     <section id="screen-start" class="screen card">
       <h1>Бесплатный IQ-тест</h1>
       <p class="lead">Проверьте логику, внимание и умение находить закономерности. Результат вы увидите сразу, без регистрации и без оплаты.</p>
-      <ul class="facts">
-        <li><strong>30</strong> заданий</li>
-        <li><strong>25</strong> минут</li>
-        <li><strong>5</strong> типов задач</li>
-      </ul>
+      <h2 class="pick-title">Выберите тест</h2>
+      <div id="test-picker" class="picker" role="radiogroup" aria-label="Выбор теста"></div>
+      <p id="test-desc" class="test-desc"></p>
+      <p class="note">Все задания оригинальные. Тесты сделаны по мотивам классических форматов IQ-тестов, но не повторяют их и не являются их копиями.</p>
       <ul class="rules">
         <li>Выберите один вариант ответа в каждом задании.</li>
         <li>Задания можно пропускать и возвращаться к ним.</li>
         <li>Сложные задания приносят больше баллов.</li>
         <li>Когда время закончится, тест завершится автоматически.</li>
-        <li>Можно отвечать с клавиатуры: цифры 1–6, стрелки ← →.</li>
+        <li>Можно отвечать с клавиатуры: цифры 1–8, стрелки ← →.</li>
       </ul>
       <div class="actions">
         <button class="btn primary" id="btn-start">Начать тест</button>
@@ -67,6 +66,7 @@
     <!-- Результат -->
     <section id="screen-result" class="screen" hidden>
       <div class="card result">
+        <p class="result-label" id="r-test"></p>
         <p class="result-label">Ваш примерный IQ</p>
         <div class="iq" id="r-iq">100</div>
         <p class="result-level" id="r-level"></p>
@@ -86,9 +86,24 @@
         <button class="btn primary" id="btn-review">Разбор ответов</button>
         <button class="btn" id="btn-share">Поделиться</button>
         <button class="btn" id="btn-restart">Пройти заново</button>
+        <button class="btn" id="btn-choose">Выбрать другой тест</button>
       </div>
       <p class="note center" id="share-status" aria-live="polite"></p>
-      <p class="note center">Результат — грубая оценка по 30 заданиям. Он не является клиническим измерением интеллекта.</p>
+      <div id="share-panel" class="card share-panel" hidden>
+        <h3>Поделиться результатом</h3>
+        <img id="share-img" class="share-img" alt="Картинка с результатом теста">
+        <div class="actions center">
+          <a class="btn primary" id="share-download" download="iq-result.png">Скачать картинку</a>
+          <button class="btn" id="share-copy">Копировать текст</button>
+        </div>
+        <div class="actions center share-links">
+          <a class="btn" id="share-tg" target="_blank" rel="noopener">Telegram</a>
+          <a class="btn" id="share-wa" target="_blank" rel="noopener">WhatsApp</a>
+          <a class="btn" id="share-vk" target="_blank" rel="noopener">ВКонтакте</a>
+        </div>
+        <p class="note center">Скачайте картинку и прикрепите её к сообщению. Текст со ссылкой откроется в выбранном мессенджере.</p>
+      </div>
+      <p class="note center" id="r-note">Результат — грубая оценка. Он не является клиническим измерением интеллекта.</p>
       <div id="review" class="review" hidden></div>
     </section>
   </main>
@@ -97,7 +112,10 @@
     <p>Бесплатно и с открытым кодом. Ответы не отправляются на сервер.</p>
   </footer>
 
-  <script src="js/questions.js"></script>
+  <script src="js/generator.js"></script>
+  <script src="js/bank/classic.js"></script>
+  <script src="js/bank/extra.js"></script>
+  <script src="js/tests.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

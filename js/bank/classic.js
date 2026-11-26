@@ -1,5 +1,6 @@
 /*
- * Банк вопросов. Все задания оригинальные.
+ * Банк заданий, часть 1. Все задания оригинальные.
+ * Из общего банка тесты «Быстрый» и «Смешанный» каждый раз берут случайный набор.
  *
  * Поля вопроса:
  *   id        — уникальный идентификатор
@@ -20,15 +21,7 @@
   const arrow = (rot) => ({ shape: 'arrow', count: 1, fill: 'none', rot });
   const poly = (sides, fill) => ({ shape: 'poly', count: 1, sides, fill: fill || 'none' });
 
-  window.IQ_CATEGORIES = {
-    numbers: 'Числовые ряды',
-    letters: 'Буквенные ряды',
-    verbal: 'Вербальная логика',
-    logic: 'Логические задачи',
-    matrix: 'Визуальные матрицы'
-  };
-
-  window.IQ_QUESTIONS = [
+  const questions = [
     {
       id: 'n1', category: 'numbers', difficulty: 1,
       text: 'Какое число продолжает ряд?  2, 4, 8, 16, …',
@@ -255,4 +248,6 @@
       explain: 'Минутная стрелка указывает на 3 (90°). Часовая прошла четверть пути от 3 к 4: 90° + 30° × ¼ = 97,5°. Разница — 7,5°.'
     }
   ];
+
+  window.IQ_BANK = (window.IQ_BANK || []).concat(questions.map((q) => Object.assign({}, q, { id: 'c-' + q.id })));
 })();
