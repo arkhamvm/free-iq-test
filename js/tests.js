@@ -53,7 +53,7 @@
       id: prefix + diff + '-' + i,
       category: 'matrix',
       difficulty: diff,
-      text: 'Какая клетка должна стоять на месте знака вопроса?'
+      p: 'matrixCell'
     }, GEN.makeMatrix(spec, seedFrom(rand), 6)));
   }
 
@@ -81,13 +81,8 @@
     return [1, 2, 3].reduce((out, d) => out.concat(shuffle(picked.filter((q) => q.difficulty === d), rand)), []);
   }
 
-  const TEXT_CATEGORIES = {
-    numbers: 'Числовые ряды',
-    letters: 'Буквенные ряды',
-    verbal: 'Слова и понятия',
-    logic: 'Логические задачи',
-    matrix: 'Визуальные матрицы'
-  };
+  // Названия тестов, категорий и тексты — в словарях js/i18n/*.js.
+  const TEXT_CATEGORIES = ['numbers', 'letters', 'verbal', 'logic', 'matrix'];
   const QUICK_QUOTAS = { numbers: 8, letters: 3, verbal: 5, logic: 8, matrix: 6 };
   const MIXED_QUOTAS = { numbers: 12, letters: 6, verbal: 10, logic: 6, matrix: 6 };
   const sum = (o) => Object.keys(o).reduce((s, k) => s + o[k], 0);
@@ -95,9 +90,6 @@
   window.IQ_TESTS = [
     {
       id: 'quick',
-      title: 'Быстрый',
-      badge: 'Рекомендуем',
-      description: 'Числовые и буквенные ряды, аналогии, логические задачи и матрицы. Хорошо подходит для первого знакомства.',
       timeLimit: 25 * 60,
       count: sum(QUICK_QUOTAS),
       categories: TEXT_CATEGORIES,
@@ -105,9 +97,6 @@
     },
     {
       id: 'mixed',
-      title: 'Смешанный',
-      badge: 'Средний',
-      description: 'Больше рядов и заданий со словами, плюс логика и матрицы. Задания разных типов идут вперемешку.',
       timeLimit: 30 * 60,
       count: sum(MIXED_QUOTAS),
       categories: TEXT_CATEGORIES,
@@ -115,12 +104,9 @@
     },
     {
       id: 'matrices',
-      title: 'Матрицы',
-      badge: 'Полный',
-      description: '60 невербальных матриц в 5 сериях от простых к сложным. Не зависит от языка и школьных знаний.',
       timeLimit: 40 * 60,
       count: 60,
-      categories: { A: 'Серия A', B: 'Серия B', C: 'Серия C', D: 'Серия D', E: 'Серия E' },
+      categories: ['A', 'B', 'C', 'D', 'E'],
       build: (seed) => {
         const rand = GEN.rng(seed);
         const out = [];
@@ -130,7 +116,8 @@
               id: s + (i + 1),
               category: s,
               difficulty: SERIES_DIFF[s],
-              text: 'Серия ' + s + ', задание ' + (i + 1) + '. Какая клетка должна стоять на месте знака вопроса?'
+              series: s,
+              num: i + 1
             }, GEN.makeMatrix(spec, seedFrom(rand), s === 'A' || s === 'B' ? 6 : 8)));
           });
         });

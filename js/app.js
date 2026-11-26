@@ -2,6 +2,8 @@
   'use strict';
 
   const TESTS = window.IQ_TESTS;
+  const I = window.I18N;
+  const t = (k, p) => I.t(k, p);
   const DEFAULT_TEST = 'quick';
   const KEY_PREFIX = 'free-iq-test:v3:';
   const ACTIVE_KEY = 'free-iq-test:active';
@@ -17,7 +19,10 @@
 
   function selectTest(id) {
     TEST = TESTS.find((t) => t.id === id) || TESTS.find((t) => t.id === DEFAULT_TEST) || TESTS[0];
-    CATEGORIES = TEST.categories;
+    CATEGORIES = {};
+    TEST.categories.forEach((c) => {
+      CATEGORIES[c] = c.length === 1 ? t('cat.series', { s: c }) : t('cat.' + c);
+    });
     TIME_LIMIT = TEST.timeLimit;
     STORAGE_KEY = KEY_PREFIX + TEST.id;
     QUESTIONS = [];
@@ -158,26 +163,50 @@
   }
 
   function describeCell(cell) {
-    if (cell.shape === 'arrow') return cell.count + ' × стрелка, поворот ' + cell.rot + '°';
-    const names = {
-      circle: 'круг', square: 'квадрат', triangle: 'треугольник', diamond: 'ромб',
-      pentagon: 'пятиугольник', hexagon: 'шестиугольник', cross: 'крест', poly: cell.sides + '-угольник'
-    };
-    const fills = { none: 'белый', gray: 'серый', black: 'чёрный' };
-    const sizes = { 0.55: ', маленький', 0.78: ', средний' };
-    const inners = { dot: ', с точкой', bar: ', с чертой' };
-    return cell.count + ' × ' + names[cell.shape] + ', ' + fills[cell.fill || 'none'] +
-      (sizes[cell.size] || '') + (inners[cell.inner] || '');
+    const name = t('cell.shape.' + cell.shape, { n: cell.sides });
+    if (cell.shape === 'arrow') return cell.count + ' × ' + name + ', ' + t('cell.rot', { r: cell.rot });
+    const parts = [cell.count + ' × ' + name, t('cell.fill.' + (cell.fill || 'none'))];
+    if (cell.size === 0.55) parts.push(t('cell.small'));
+    if (cell.size === 0.78) parts.push(t('cell.medium'));
+    if (cell.inner === 'dot' || cell.inner === 'bar') parts.push(t('cell.' + cell.inner));
+    return parts.join(', ');
   }
 
   function matrixHtml(q) {
     return q.matrix.map((cell) => cell
       ? '<div class="cell">' + cellSvg(cell) + '</div>'
-      : '<div class="cell missing" aria-label="пропущенная клетка">?</div>').join('');
+      : '<div class="cell missing" aria-label="' + esc(t('quiz.missing')) + '">?</div>').join('');
   }
 
   function optionContent(q, opt) {
     return isVisual(q) ? '<span class="pic">' + cellSvg(opt) + '</span>' : '<span>' + esc(opt) + '</span>';
+  }
+
+  /* ---------- Тексты заданий на текущем языке ---------- */
+  function qText(q) {
+    const tr = I.q(q.id);
+    if (tr && tr.t) return tr.t;
+    if (q.series) return t('prompt.seriesTask', { s: q.series, i: q.num });
+    if (q.p) return t('prompt.' + q.p) + (q.seq ? '  ' + q.seq + (q.p === 'oddNumber' ? '' : ', …') : '');
+    return q.text;
+  }
+  function qOptions(q) {
+    const tr = I.q(q.id);
+    return tr && tr.o ? tr.o : q.options;
+  }
+  function qExplain(q) {
+    const tr = I.q(q.id);
+    if (tr && tr.e) return tr.e;
+    if (q.rules) {
+      if (!q.rules.length) return t('rule.same');
+      return q.rules.map((r) => {
+        const a = t('rule.attr.' + r.attr);
+        if (r.type !== 'prog') return t('rule.' + r.type, { a });
+        if (r.dr && r.dc) return t('rule.progBoth', { a, c: r.dc, r: r.dr });
+        return r.dc ? t('rule.progRight', { a, n: r.dc }) : t('rule.progDown', { a, n: r.dr });
+      }).join(' ');
+    }
+    return q.explain;
   }
 
   /* ---------- Экраны ---------- */
@@ -198,22 +227,44 @@
   function renderPicker() {
     const box = $('test-picker');
     box.innerHTML = '';
-    TESTS.forEach((t) => {
-      const saved = load(KEY_PREFIX + t.id);
-      const inProgress = saved && !saved.finished && (t.timeLimit - (Date.now() - saved.startedAt) / 1000) > 0;
+    TESTS.forEach((tt) => {
+      const saved = load(KEY_PREFIX + tt.id);
+      const inProgress = saved && !saved.finished && (tt.timeLimit - (Date.now() - saved.startedAt) / 1000) > 0;
       const b = document.createElement('button');
       b.type = 'button';
-      b.className = 'test-card' + (t.id === TEST.id ? ' selected' : '');
+      b.className = 'test-card' + (tt.id === TEST.id ? ' selected' : '');
       b.setAttribute('role', 'radio');
-      b.setAttribute('aria-checked', t.id === TEST.id ? 'true' : 'false');
-      b.innerHTML = (t.badge ? '<span class="t-badge">' + esc(t.badge) + '</span>' : '') +
-        '<span class="t-name">' + esc(t.title) + '</span>' +
-        '<span class="t-meta">' + t.count + ' заданий · ' + Math.round(t.timeLimit / 60) + ' мин</span>' +
-        (inProgress ? '<span class="t-saved">Есть незавершённый</span>' : '');
-      b.addEventListener('click', () => { selectTest(t.id); showStart(); });
+      b.setAttribute('aria-checked', tt.id === TEST.id ? 'true' : 'false');
+      b.innerHTML = '<span class="t-badge">' + esc(t('tests.' + tt.id + '.badge')) + '</span>' +
+        '<span class="t-name">' + esc(t('tests.' + tt.id + '.title')) + '</span>' +
+        '<span class="t-meta">' + esc(t('start.meta', { n: tt.count, m: Math.round(tt.timeLimit / 60) })) + '</span>' +
+        (inProgress ? '<span class="t-saved">' + esc(t('start.saved')) + '</span>' : '');
+      b.addEventListener('click', () => { selectTest(tt.id); showStart(); });
       box.appendChild(b);
     });
-    $('test-desc').textContent = TEST.description;
+    $('test-desc').textContent = t('tests.' + TEST.id + '.desc');
+  }
+
+  const testTitle = () => t('tests.' + TEST.id + '.title');
+
+  // Перенос строки по словам для картинки (для китайского — по символам).
+  function wrapLines(str, maxW, f) {
+    const cv = wrapLines.cv || (wrapLines.cv = document.createElement('canvas').getContext('2d'));
+    cv.font = f;
+    const tokens = /\s/.test(str) ? str.split(/(\s+)/) : Array.from(str);
+    const lines = [];
+    let line = '';
+    tokens.forEach((tok) => {
+      const next = line + tok;
+      if (cv.measureText(next.trim()).width > maxW && line.trim()) {
+        lines.push(line.trim());
+        line = tok.trim() ? tok : '';
+      } else {
+        line = next;
+      }
+    });
+    if (line.trim()) lines.push(line.trim());
+    return lines;
   }
 
   function showStart() {
@@ -223,8 +274,8 @@
     renderPicker();
     const canResume = state && remaining() > 0;
     $('btn-resume').hidden = !canResume;
-    if (canResume) $('btn-resume').textContent = 'Продолжить (осталось ' + fmtTime(remaining()) + ')';
-    $('btn-start').textContent = canResume ? 'Начать заново' : 'Начать тест';
+    if (canResume) $('btn-resume').textContent = t('start.resume', { time: fmtTime(remaining()) });
+    $('btn-start').textContent = canResume ? t('start.beginAgain') : t('start.begin');
     show('start');
   }
 
@@ -243,9 +294,9 @@
     const q = QUESTIONS[i];
     const total = QUESTIONS.length;
 
-    $('q-counter').textContent = 'Вопрос ' + (i + 1) + ' из ' + total;
+    $('q-counter').textContent = t('quiz.counter', { i: i + 1, n: total });
     $('q-category').textContent = CATEGORIES[q.category];
-    $('q-text').textContent = q.text;
+    $('q-text').textContent = qText(q);
     $('progress-bar').style.width = (Object.keys(state.answers).length / total * 100) + '%';
 
     const m = $('q-matrix');
@@ -260,13 +311,13 @@
       b.className = 'opt' + (state.answers[q.id] === orig ? ' selected' : '');
       b.setAttribute('role', 'radio');
       b.setAttribute('aria-checked', state.answers[q.id] === orig ? 'true' : 'false');
-      b.innerHTML = '<span class="key">' + (pos + 1) + '</span>' + optionContent(q, q.options[orig]);
+      b.innerHTML = '<span class="key">' + (pos + 1) + '</span>' + optionContent(q, qOptions(q)[orig]);
       b.addEventListener('click', () => choose(orig));
       box.appendChild(b);
     });
 
     $('btn-prev').disabled = i === 0;
-    $('btn-next').textContent = i === total - 1 ? 'Завершить' : 'Далее →';
+    $('btn-next').textContent = i === total - 1 ? t('quiz.finish') : t('quiz.next');
     renderMap();
   }
 
@@ -279,7 +330,7 @@
       b.textContent = i + 1;
       if (state.answers[q.id] !== undefined) b.classList.add('answered');
       if (i === state.current) b.classList.add('current');
-      b.setAttribute('aria-label', 'Вопрос ' + (i + 1) + (state.answers[q.id] !== undefined ? ', есть ответ' : ''));
+      b.setAttribute('aria-label', t(state.answers[q.id] !== undefined ? 'quiz.mapAnswered' : 'quiz.mapItem', { i: i + 1 }));
       b.addEventListener('click', () => go(i));
       map.appendChild(b);
     });
@@ -312,15 +363,15 @@
 
   function resetFinishButton() {
     finishArmed = false;
-    $('btn-finish').textContent = 'Завершить тест';
+    $('btn-finish').textContent = t('quiz.finishTest');
   }
 
   function requestFinish() {
     const left = unansweredCount();
     if (left > 0 && !finishArmed) {
       finishArmed = true;
-      $('btn-finish').textContent = 'Без ответа: ' + left + '. Нажмите ещё раз, чтобы завершить';
-      $('btn-next').textContent = 'Без ответа: ' + left + '. Завершить?';
+      $('btn-finish').textContent = t('quiz.armFinish', { n: left });
+      $('btn-next').textContent = t('quiz.armNext', { n: left });
       return;
     }
     finish();
@@ -371,11 +422,11 @@
   }
 
   function level(iq) {
-    if (iq >= 130) return 'Очень высокий результат';
-    if (iq >= 115) return 'Выше среднего';
-    if (iq >= 85) return 'Средний уровень';
-    if (iq >= 70) return 'Ниже среднего';
-    return 'Значительно ниже среднего';
+    if (iq >= 130) return t('level.veryHigh');
+    if (iq >= 115) return t('level.above');
+    if (iq >= 85) return t('level.average');
+    if (iq >= 70) return t('level.below');
+    return t('level.wellBelow');
   }
 
   function finish() {
@@ -401,7 +452,7 @@
     area += 'L' + x(iq) + ',' + (H - 18) + 'Z';
     const ticks = [70, 85, 100, 115, 130].map((t) =>
       '<text x="' + x(t) + '" y="' + (H - 2) + '" text-anchor="middle" font-size="12" fill="var(--muted)">' + t + '</text>').join('');
-    return '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Положение результата на нормальном распределении">' +
+    return '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + esc(t('result.bell')) + '">' +
       '<path d="' + area + '" fill="var(--accent-soft)"/>' +
       '<path d="' + line + '" fill="none" stroke="var(--muted)" stroke-width="2"/>' +
       '<line x1="' + x(iq) + '" x2="' + x(iq) + '" y1="8" y2="' + (H - 18) + '" stroke="var(--accent)" stroke-width="3"/>' +
@@ -412,13 +463,13 @@
   function renderResult() {
     const r = computeResult();
     show('result');
-    $('r-test').textContent = 'Тест «' + TEST.title + '»';
-    $('r-note').textContent = 'Результат — грубая оценка по ' + QUESTIONS.length + ' заданиям. Он не является клиническим измерением интеллекта.';
+    $('r-test').textContent = t('result.test', { name: testTitle() });
+    $('r-note').textContent = t('result.note', { n: QUESTIONS.length });
     $('r-iq').textContent = r.iq;
     $('r-level').textContent = level(r.iq);
     $('r-bell').innerHTML = bellSvg(r.iq);
     const better = Math.max(0.1, Math.min(99.9, r.percentile));
-    $('r-summary').textContent = 'Ваш результат выше, чем примерно у ' + String(better).replace('.', ',') + ' % людей.';
+    $('r-summary').textContent = t('result.summary', { p: I.num(better, 1) });
     $('r-correct').textContent = r.correct + ' / ' + QUESTIONS.length;
     $('r-percentile').textContent = Math.round(better);
     $('r-time').textContent = fmtTime(r.used);
@@ -432,7 +483,7 @@
 
     $('review').hidden = true;
     $('review').innerHTML = '';
-    $('btn-review').textContent = 'Разбор ответов';
+    $('btn-review').textContent = t('result.review');
     $('share-status').textContent = '';
     $('share-panel').hidden = true;
   }
@@ -441,7 +492,7 @@
     const box = $('review');
     if (!box.hidden) {
       box.hidden = true;
-      $('btn-review').textContent = 'Разбор ответов';
+      $('btn-review').textContent = t('result.review');
       return;
     }
     box.innerHTML = QUESTIONS.map((q, i) => {
@@ -450,25 +501,28 @@
       const pill = (cls, label, opt) => '<span class="pill ' + cls + '">' + label + ' ' +
         (isVisual(q) ? cellSvg(opt) : '<strong>' + esc(opt) + '</strong>') + '</span>';
       let ans = '';
-      if (given === undefined) ans += '<span class="pill bad">Нет ответа</span>';
-      else if (!ok) ans += pill('bad', 'Ваш ответ:', q.options[given]);
-      ans += pill('ok', ok ? 'Верно:' : 'Правильно:', q.options[q.answer]);
+      const opts = qOptions(q);
+      if (given === undefined) ans += '<span class="pill bad">' + esc(t('review.none')) + '</span>';
+      else if (!ok) ans += pill('bad', esc(t('review.yours')), opts[given]);
+      ans += pill('ok', esc(t(ok ? 'review.right' : 'review.correct')), opts[q.answer]);
       return '<article class="card review-item ' + (ok ? 'ok' : 'bad') + '">' +
-        '<div class="q-meta"><span>Вопрос ' + (i + 1) + '</span><span class="tag">' + esc(CATEGORIES[q.category]) + '</span></div>' +
-        '<p class="q-text">' + esc(q.text) + '</p>' +
+        '<div class="q-meta"><span>' + esc(t('review.question', { i: i + 1 })) + '</span><span class="tag">' + esc(CATEGORIES[q.category]) + '</span></div>' +
+        '<p class="q-text">' + esc(qText(q)) + '</p>' +
         (q.matrix ? '<div class="matrix">' + matrixHtml(q) + '</div>' : '') +
         '<div class="review-ans">' + ans + '</div>' +
-        '<p class="review-explain">' + esc(q.explain) + '</p></article>';
+        '<p class="review-explain">' + esc(qExplain(q)) + '</p></article>';
     }).join('');
     box.hidden = false;
-    $('btn-review').textContent = 'Скрыть разбор';
+    $('btn-review').textContent = t('result.hideReview');
     box.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   /* ---------- Поделиться ---------- */
   const shareUrl = () => location.origin + location.pathname;
-  const shareText = (r) => 'Мой IQ — ' + r.iq + ' (' + level(r.iq).toLowerCase() + ') в тесте «' + TEST.title +
-    '». Бесплатно и без регистрации, попробуйте сами:';
+  const shareText = (r) => {
+    const lvl = level(r.iq);
+    return t('share.text', { iq: r.iq, name: testTitle(), level: I.lang === 'de' ? lvl : lvl.toLocaleLowerCase(I.lang) });
+  };
 
   // Картинка в мобильном формате: карточка результата, разбивка по типам и ссылка.
   function drawShareImage(r) {
@@ -499,11 +553,11 @@
 
     g.fillStyle = C.bg; g.fillRect(0, 0, W, H);
     text('🧠 Free IQ Test', PAD, 85, font('700', 46), C.text, 'left');
-    text('«' + TEST.title + '»', W - PAD, 85, font('600', 40), C.muted, 'right');
+    text(testTitle(), W - PAD, 85, font('600', 40), C.muted, 'right');
 
     // Карточка результата
     rrect(CX, card1Top, CW, card1H, 40, C.card, C.border);
-    text('Ваш примерный IQ', W / 2, card1Top + 100, font('500', 46), C.muted);
+    text(t('result.label'), W / 2, card1Top + 100, font('500', 46), C.muted);
     text(String(r.iq), W / 2, card1Top + 340, font('800', 250), C.accent);
     text(level(r.iq), W / 2, card1Top + 450, font('700', 60), C.text);
 
@@ -522,10 +576,10 @@
     [70, 85, 100, 115, 130].forEach((t) => text(String(t), px(t), base + 45, font('500', 30), C.muted));
 
     const better = Math.max(0.1, Math.min(99.9, r.percentile));
-    text('Ваш результат выше, чем примерно', W / 2, card1Top + 880, font('500', 44), C.text);
-    text('у ' + String(better).replace('.', ',') + ' % людей.', W / 2, card1Top + 940, font('500', 44), C.text);
+    wrapLines(t('result.summary', { p: I.num(better, 1) }), CW - 100, font('500', 44)).slice(0, 2)
+      .forEach((line, li, arr) => text(line, W / 2, card1Top + (arr.length === 1 ? 910 : 880 + li * 60), font('500', 44), C.text));
 
-    const stats = [[r.correct + ' / ' + QUESTIONS.length, 'правильных'], [String(Math.round(better)), 'процентиль'], [fmtTime(r.used), 'время']];
+    const stats = [[r.correct + ' / ' + QUESTIONS.length, t('result.correct')], [String(Math.round(better)), t('result.percentile')], [fmtTime(r.used), t('result.time')]];
     const gap = 24, bw = (CW - 80 - 2 * gap) / 3, by = card1Top + 990;
     stats.forEach(([v, l], i) => {
       const bx = CX + 40 + i * (bw + gap);
@@ -536,7 +590,7 @@
 
     // Карточка «По типам заданий»
     rrect(CX, card2Top, CW, card2H, 40, C.card, C.border);
-    text('По типам заданий', CX + 50, card2Top + 95, font('700', 52), C.text, 'left');
+    text(t('result.byType'), CX + 50, card2Top + 95, font('700', 52), C.text, 'left');
     cats.forEach((k, i) => {
       const c = r.byCat[k];
       const y = card2Top + 185 + i * 118;
@@ -548,7 +602,7 @@
 
     // Ссылка на тест
     rrect(CX, linkTop, CW, linkH, 40, C.accent);
-    text('Пройди тест бесплатно →', W / 2, linkTop + 85, font('700', 54), C.bg);
+    text(t('share.cta'), W / 2, linkTop + 85, font('700', 54), C.bg);
     let link = shareUrl().replace(/^https?:\/\//, '').replace(/\/$/, '');
     g.font = font('600', 40);
     while (g.measureText(link).width > CW - 80 && link.length > 10) link = link.slice(0, -2);
@@ -571,7 +625,7 @@
     // На телефонах: системное меню «Поделиться» с картинкой и текстом.
     if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
       try {
-        await navigator.share({ files: [file], title: 'Бесплатный IQ-тест', text: text + ' ' + url });
+        await navigator.share({ files: [file], title: t('share.appTitle'), text: text + ' ' + url });
         return;
       } catch (e) {
         if (e && e.name === 'AbortError') return;
@@ -589,7 +643,7 @@
     $('share-copy').onclick = async () => {
       try {
         await navigator.clipboard.writeText(text + ' ' + url);
-        status.textContent = 'Текст со ссылкой скопирован.';
+        status.textContent = t('share.copied');
       } catch (e) {
         status.textContent = text + ' ' + url;
       }
@@ -634,8 +688,30 @@
     }
   });
 
+  /* ---------- Язык ---------- */
+  function setupLanguage() {
+    const sel = $('lang-select');
+    I.langs().forEach((l) => {
+      const o = document.createElement('option');
+      o.value = l.code;
+      o.textContent = l.name;
+      sel.appendChild(o);
+    });
+    I.set(I.detect(), false);
+    sel.value = I.lang;
+    sel.addEventListener('change', () => {
+      I.set(sel.value, true);
+      selectTest(TEST.id);
+      if (state) useSeed(state.seed);
+      if (!screens.quiz.hidden) renderQuestion();
+      else if (!screens.result.hidden) renderResult();
+      else showStart();
+    });
+  }
+
   /* ---------- Старт ---------- */
   $('q-text').tabIndex = -1;
+  setupLanguage();
   selectTest(getActive() || DEFAULT_TEST);
   state = load();
   if (state) useSeed(state.seed);

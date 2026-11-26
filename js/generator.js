@@ -29,10 +29,6 @@
     rot: [0, 45, 90, 135, 180, 225, 270, 315]
   };
   const ORDERED = { count: true, size: true, rot: true };
-  const NAMES = {
-    shape: 'Форма', count: 'Количество фигур', fill: 'Заливка',
-    size: 'Размер', inner: 'Метка внутри', rot: 'Поворот стрелки'
-  };
   const DEFAULTS = { shape: 'circle', count: 1, fill: 'none', size: 1, inner: 'none', rot: 0 };
 
   // Детерминированный ГПСЧ (mulberry32).
@@ -99,23 +95,6 @@
   }
 
   const key = (cell) => [cell.shape, cell.count, cell.fill, cell.size, cell.inner, cell.rot].join('|');
-
-  function describeRule(attr, rule) {
-    const n = NAMES[attr];
-    switch (rule.type) {
-      case 'row': return n + ': одинакова внутри строки, в каждой строке своя.';
-      case 'col': return n + ': одинакова внутри столбца, в каждом столбце своя.';
-      case 'latin': return n + ': в каждой строке и каждом столбце по одному разу встречаются три варианта.';
-      case 'prog': {
-        const dr = rule.arg[0] || '0', dc = rule.arg[1] || '1';
-        const parts = [];
-        if (dc !== '0') parts.push('на ' + dc + ' шаг(а) слева направо');
-        if (dr !== '0') parts.push('на ' + dr + ' шаг(а) сверху вниз');
-        return n + ': меняется ' + parts.join(' и ') + '.';
-      }
-      default: return '';
-    }
-  }
 
   /**
    * Создаёт матричное задание.
@@ -189,13 +168,18 @@
     if (options.length < nOpts) throw new Error('Not enough distractors for ' + spec);
 
     const order = pickDistinct(rand, options.map((_, i) => i), options.length);
-    const explain = Object.keys(rules).filter((a) => rules[a].type !== 'const')
-      .map((a) => describeRule(a, rules[a])).join(' ');
+    // Описание правил для объяснения в разборе (текст собирается на нужном языке).
+    const ruleList = Object.keys(rules).filter((a) => rules[a].type !== 'const').map((a) => ({
+      attr: a,
+      type: rules[a].type,
+      dr: rules[a].type === 'prog' ? parseInt(rules[a].arg[0] || '0', 10) : 0,
+      dc: rules[a].type === 'prog' ? parseInt(rules[a].arg[1] || '1', 10) : 0
+    }));
     return {
       matrix,
       options: order.map((i) => options[i]),
       answer: order.indexOf(0),
-      explain: explain || 'Все клетки одинаковы.'
+      rules: ruleList
     };
   }
 

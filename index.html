@@ -1,43 +1,40 @@
 <!doctype html>
-<html lang="ru">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Бесплатный IQ-тест</title>
-  <meta name="description" content="Бесплатный онлайн IQ-тест: три теста на выбор: логика, числовые ряды и визуальные матрицы. Без регистрации и без оплаты результата.">
+  <title>Free IQ Test</title>
+  <meta name="description" content="Free online IQ test: three tests with logic puzzles, number series and visual matrices. No sign-up, no paywall. Available in 7 languages.">
   <meta name="theme-color" content="#4f46e5">
-  <meta property="og:title" content="Бесплатный IQ-тест">
-  <meta property="og:description" content="Три теста на выбор, результат сразу и бесплатно.">
+  <meta property="og:title" content="Free IQ Test">
+  <meta property="og:description" content="Three tests, instant free results, 7 languages.">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A7%A0%3C/text%3E%3C/svg%3E">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
   <header class="topbar">
     <a class="brand" href="./">🧠 Free IQ Test</a>
-    <div class="timer" id="timer" hidden aria-live="off">25:00</div>
+    <div class="top-right">
+      <div class="timer" id="timer" hidden aria-live="off">25:00</div>
+      <select id="lang-select" class="lang-select" data-i18n-aria="lang"></select>
+    </div>
   </header>
 
   <main id="app">
     <!-- Стартовый экран -->
     <section id="screen-start" class="screen card">
-      <h1>Бесплатный IQ-тест</h1>
-      <p class="lead">Проверьте логику, внимание и умение находить закономерности. Результат вы увидите сразу, без регистрации и без оплаты.</p>
-      <h2 class="pick-title">Выберите тест</h2>
-      <div id="test-picker" class="picker" role="radiogroup" aria-label="Выбор теста"></div>
+      <h1 data-i18n="start.title"></h1>
+      <p class="lead" data-i18n-html="start.lead"></p>
+      <h2 class="pick-title" data-i18n="start.pick"></h2>
+      <div id="test-picker" class="picker" role="radiogroup" data-i18n-aria="start.pick"></div>
       <p id="test-desc" class="test-desc"></p>
-      <p class="note">Все задания оригинальные. Тесты сделаны по мотивам классических форматов IQ-тестов, но не повторяют их и не являются их копиями.</p>
-      <ul class="rules">
-        <li>Выберите один вариант ответа в каждом задании.</li>
-        <li>Задания можно пропускать и возвращаться к ним.</li>
-        <li>Сложные задания приносят больше баллов.</li>
-        <li>Когда время закончится, тест завершится автоматически.</li>
-        <li>Можно отвечать с клавиатуры: цифры 1–8, стрелки ← →.</li>
-      </ul>
+      <p class="note" data-i18n="start.inspired"></p>
+      <ul class="rules" data-i18n-list="start.rules"></ul>
       <div class="actions">
-        <button class="btn primary" id="btn-start">Начать тест</button>
-        <button class="btn" id="btn-resume" hidden>Продолжить начатый тест</button>
+        <button class="btn primary" id="btn-start" data-i18n="start.begin"></button>
+        <button class="btn" id="btn-resume" hidden></button>
       </div>
-      <p class="note">Это развлекательный тест. Он не заменяет профессиональную психологическую диагностику.</p>
+      <p class="note" data-i18n="start.disclaimer"></p>
     </section>
 
     <!-- Экран вопроса -->
@@ -45,21 +42,21 @@
       <div class="progress" aria-hidden="true"><div class="progress-bar" id="progress-bar"></div></div>
       <div class="card">
         <div class="q-meta">
-          <span id="q-counter">Вопрос 1 из 30</span>
+          <span id="q-counter"></span>
           <span id="q-category" class="tag"></span>
         </div>
         <h2 id="q-text" class="q-text"></h2>
         <div id="q-matrix" class="matrix" hidden></div>
         <div id="q-options" class="options" role="radiogroup"></div>
         <div class="nav">
-          <button class="btn" id="btn-prev">← Назад</button>
-          <button class="btn primary" id="btn-next">Далее →</button>
+          <button class="btn" id="btn-prev" data-i18n="quiz.prev"></button>
+          <button class="btn primary" id="btn-next" data-i18n="quiz.next"></button>
         </div>
       </div>
       <details class="card qmap-wrap">
-        <summary>Карта вопросов</summary>
+        <summary data-i18n="quiz.map"></summary>
         <div id="qmap" class="qmap"></div>
-        <button class="btn danger" id="btn-finish">Завершить тест</button>
+        <button class="btn danger" id="btn-finish" data-i18n="quiz.finishTest"></button>
       </details>
     </section>
 
@@ -67,51 +64,59 @@
     <section id="screen-result" class="screen" hidden>
       <div class="card result">
         <p class="result-label" id="r-test"></p>
-        <p class="result-label">Ваш примерный IQ</p>
+        <p class="result-label" data-i18n="result.label"></p>
         <div class="iq" id="r-iq">100</div>
         <p class="result-level" id="r-level"></p>
         <div class="bell" id="r-bell"></div>
         <p id="r-summary"></p>
         <div class="stats">
-          <div><strong id="r-correct">0</strong><span>правильных</span></div>
-          <div><strong id="r-percentile">0</strong><span>процентиль</span></div>
-          <div><strong id="r-time">0:00</strong><span>время</span></div>
+          <div><strong id="r-correct">0</strong><span data-i18n="result.correct"></span></div>
+          <div><strong id="r-percentile">0</strong><span data-i18n="result.percentile"></span></div>
+          <div><strong id="r-time">0:00</strong><span data-i18n="result.time"></span></div>
         </div>
       </div>
       <div class="card">
-        <h3>По типам заданий</h3>
+        <h3 data-i18n="result.byType"></h3>
         <div id="r-categories" class="cats"></div>
       </div>
       <div class="actions center">
-        <button class="btn primary" id="btn-review">Разбор ответов</button>
-        <button class="btn" id="btn-share">Поделиться</button>
-        <button class="btn" id="btn-restart">Пройти заново</button>
-        <button class="btn" id="btn-choose">Выбрать другой тест</button>
+        <button class="btn primary" id="btn-review" data-i18n="result.review"></button>
+        <button class="btn" id="btn-share" data-i18n="result.share"></button>
+        <button class="btn" id="btn-restart" data-i18n="result.restart"></button>
+        <button class="btn" id="btn-choose" data-i18n="result.choose"></button>
       </div>
       <p class="note center" id="share-status" aria-live="polite"></p>
       <div id="share-panel" class="card share-panel" hidden>
-        <h3>Поделиться результатом</h3>
-        <img id="share-img" class="share-img" alt="Картинка с результатом теста">
+        <h3 data-i18n="share.title"></h3>
+        <img id="share-img" class="share-img" data-i18n-alt="share.imgAlt" alt="">
         <div class="actions center">
-          <a class="btn primary" id="share-download" download="iq-result.png">Скачать картинку</a>
-          <button class="btn" id="share-copy">Копировать текст</button>
+          <a class="btn primary" id="share-download" download="iq-result.png" data-i18n="share.download"></a>
+          <button class="btn" id="share-copy" data-i18n="share.copy"></button>
         </div>
         <div class="actions center share-links">
           <a class="btn" id="share-tg" target="_blank" rel="noopener">Telegram</a>
           <a class="btn" id="share-wa" target="_blank" rel="noopener">WhatsApp</a>
-          <a class="btn" id="share-vk" target="_blank" rel="noopener">ВКонтакте</a>
+          <a class="btn" id="share-vk" target="_blank" rel="noopener">VK</a>
         </div>
-        <p class="note center">Скачайте картинку и прикрепите её к сообщению. Текст со ссылкой откроется в выбранном мессенджере.</p>
+        <p class="note center" data-i18n="share.hint"></p>
       </div>
-      <p class="note center" id="r-note">Результат — грубая оценка. Он не является клиническим измерением интеллекта.</p>
+      <p class="note center" id="r-note"></p>
       <div id="review" class="review" hidden></div>
     </section>
   </main>
 
   <footer class="footer">
-    <p>Бесплатно и с открытым кодом. Ответы не отправляются на сервер.</p>
+    <p data-i18n="footer"></p>
   </footer>
 
+  <script src="js/i18n.js"></script>
+  <script src="js/i18n/en.js"></script>
+  <script src="js/i18n/ru.js"></script>
+  <script src="js/i18n/es.js"></script>
+  <script src="js/i18n/pt.js"></script>
+  <script src="js/i18n/de.js"></script>
+  <script src="js/i18n/fr.js"></script>
+  <script src="js/i18n/zh.js"></script>
   <script src="js/generator.js"></script>
   <script src="js/bank/classic.js"></script>
   <script src="js/bank/extra.js"></script>

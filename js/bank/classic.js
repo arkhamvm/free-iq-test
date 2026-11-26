@@ -6,7 +6,8 @@
  *   id        — уникальный идентификатор
  *   category  — numbers | letters | verbal | logic | matrix
  *   difficulty— 1 (лёгкий) .. 3 (сложный), влияет на вес при подсчёте
- *   text      — текст вопроса
+ *   text      — текст вопроса (на русском; переводы — в js/i18n/<язык>.js)
+ *   p, seq    — вместо text для типовых заданий: шаблон вопроса и ряд
  *   options   — варианты ответа (строки или описания ячеек для матриц)
  *   answer    — индекс правильного варианта в options
  *   explain   — короткое объяснение, показывается при разборе
@@ -24,7 +25,7 @@
   const questions = [
     {
       id: 'n1', category: 'numbers', difficulty: 1,
-      text: 'Какое число продолжает ряд?  2, 4, 8, 16, …',
+      p: 'nextNumber', seq: '2, 4, 8, 16',
       options: ['24', '30', '32', '34'], answer: 2,
       explain: 'Каждое число вдвое больше предыдущего: 16 × 2 = 32.'
     },
@@ -36,7 +37,7 @@
     },
     {
       id: 'm1', category: 'matrix', difficulty: 1,
-      text: 'Какая фигура должна стоять на месте знака вопроса?',
+      p: 'matrixFigure',
       matrix: [
         c('circle', 1), c('circle', 2), c('circle', 3),
         c('square', 1), c('square', 2), c('square', 3),
@@ -51,7 +52,7 @@
     },
     {
       id: 'n2', category: 'numbers', difficulty: 1,
-      text: 'Какое число продолжает ряд?  81, 27, 9, 3, …',
+      p: 'nextNumber', seq: '81, 27, 9, 3',
       options: ['0', '1', '2', '1/9'], answer: 1,
       explain: 'Каждое число делится на 3: 3 ÷ 3 = 1.'
     },
@@ -63,7 +64,7 @@
     },
     {
       id: 'n3', category: 'numbers', difficulty: 1,
-      text: 'Какое число продолжает ряд?  1, 1, 2, 3, 5, 8, …',
+      p: 'nextNumber', seq: '1, 1, 2, 3, 5, 8',
       options: ['11', '12', '13', '16'], answer: 2,
       explain: 'Каждое число равно сумме двух предыдущих: 5 + 8 = 13.'
     },
@@ -81,13 +82,13 @@
     },
     {
       id: 'n4', category: 'numbers', difficulty: 2,
-      text: 'Какое число продолжает ряд?  3, 6, 11, 18, 27, …',
+      p: 'nextNumber', seq: '3, 6, 11, 18, 27',
       options: ['36', '38', '39', '40'], answer: 1,
       explain: 'Разности растут на 2: +3, +5, +7, +9, +11 → 27 + 11 = 38.'
     },
     {
       id: 'm2', category: 'matrix', difficulty: 2,
-      text: 'Какая фигура должна стоять на месте знака вопроса?',
+      p: 'matrixFigure',
       matrix: [
         c('circle', 1, 'none'), c('square', 1, 'gray'), c('triangle', 1, 'black'),
         c('square', 1, 'black'), c('triangle', 1, 'none'), c('circle', 1, 'gray'),
@@ -102,7 +103,7 @@
     },
     {
       id: 'n5', category: 'numbers', difficulty: 2,
-      text: 'Какое число продолжает ряд?  2, 6, 12, 20, 30, …',
+      p: 'nextNumber', seq: '2, 6, 12, 20, 30',
       options: ['36', '40', '42', '44'], answer: 2,
       explain: 'Это n × (n + 1): 1·2, 2·3, 3·4, 4·5, 5·6, далее 6·7 = 42.'
     },
@@ -120,13 +121,13 @@
     },
     {
       id: 'o2', category: 'numbers', difficulty: 2,
-      text: 'Какое число лишнее?  2, 3, 5, 9, 11, 13',
+      p: 'oddNumber', seq: '2, 3, 5, 9, 11, 13',
       options: ['2', '5', '9', '13'], answer: 2,
       explain: 'Все числа, кроме 9, простые. 9 = 3 × 3.'
     },
     {
       id: 'm3', category: 'matrix', difficulty: 2,
-      text: 'Какая стрелка должна стоять на месте знака вопроса?',
+      p: 'matrixArrow',
       matrix: [
         arrow(0), arrow(45), arrow(90),
         arrow(90), arrow(135), arrow(180),
@@ -144,13 +145,13 @@
     },
     {
       id: 's1', category: 'letters', difficulty: 2,
-      text: 'Какая буква продолжает ряд?  A, C, F, J, O, …',
+      p: 'nextLetter', seq: 'A, C, F, J, O',
       options: ['S', 'T', 'U', 'V'], answer: 2,
       explain: 'Шаг по латинскому алфавиту растёт: +2, +3, +4, +5, +6. O (15) + 6 = U (21).'
     },
     {
       id: 'n6', category: 'numbers', difficulty: 2,
-      text: 'Какое число продолжает ряд?  4, 9, 7, 12, 10, …',
+      p: 'nextNumber', seq: '4, 9, 7, 12, 10',
       options: ['13', '14', '15', '17'], answer: 2,
       explain: 'Чередуются +5 и −2: 10 + 5 = 15.'
     },
@@ -174,7 +175,7 @@
     },
     {
       id: 'm4', category: 'matrix', difficulty: 3,
-      text: 'Какая фигура должна стоять на месте знака вопроса?',
+      p: 'matrixFigure',
       matrix: [
         poly(3), poly(4), poly(5),
         poly(4), poly(5), poly(6),
@@ -186,7 +187,7 @@
     },
     {
       id: 'n7', category: 'numbers', difficulty: 3,
-      text: 'Какое число продолжает ряд?  5, 7, 11, 19, 35, …',
+      p: 'nextNumber', seq: '5, 7, 11, 19, 35',
       options: ['51', '64', '67', '70'], answer: 2,
       explain: 'Разности удваиваются: +2, +4, +8, +16, +32 → 35 + 32 = 67.'
     },
@@ -198,7 +199,7 @@
     },
     {
       id: 's2', category: 'letters', difficulty: 3,
-      text: 'Какая буква продолжает ряд?  Z, X, U, Q, …',
+      p: 'nextLetter', seq: 'Z, X, U, Q',
       options: ['K', 'L', 'M', 'N'], answer: 1,
       explain: 'Шаг назад по латинскому алфавиту растёт: −2, −3, −4, −5. Q (17) − 5 = L (12).'
     },
@@ -210,7 +211,7 @@
     },
     {
       id: 'm5', category: 'matrix', difficulty: 3,
-      text: 'Какая клетка должна стоять на месте знака вопроса?',
+      p: 'matrixCell',
       matrix: [
         c('triangle', 1, 'black'), c('circle', 2, 'black'), c('square', 3, 'black'),
         c('circle', 3, 'black'), c('square', 1, 'black'), c('triangle', 2, 'black'),
@@ -237,7 +238,7 @@
     },
     {
       id: 'n8', category: 'numbers', difficulty: 3,
-      text: 'Какое число продолжает ряд?  1, 2, 6, 24, 120, …',
+      p: 'nextNumber', seq: '1, 2, 6, 24, 120',
       options: ['240', '600', '720', '840'], answer: 2,
       explain: 'Множитель растёт на 1: ×2, ×3, ×4, ×5, ×6 → 120 × 6 = 720.'
     },

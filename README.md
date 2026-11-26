@@ -2,7 +2,7 @@
 
 A free, static IQ test written in plain HTML, CSS and JavaScript. No build step, no dependencies and no server: everything runs in the browser and answers are never sent anywhere. Ready to host on GitHub Pages.
 
-The interface is currently in Russian.
+Available in 7 languages: English, Russian, Spanish, Portuguese, German, French and Chinese. The language is detected from the browser, can be switched at any time and is remembered.
 
 ## Tests
 
@@ -51,6 +51,10 @@ js/generator.js     matrix question generator
 js/bank/*.js        bank of text questions
 js/tests.js         test definitions and random set sampling
 js/app.js           test flow, timer, scoring, results, sharing
+js/i18n.js          localization core (detection, switching, string lookup)
+js/i18n/<lang>.js   UI strings and question translations for one language
 ```
 
-To add a question, append an object to any file in `js/bank/` (the fields are described at the top of `js/bank/classic.js`).
+To add a question, append an object to any file in `js/bank/` (the fields are described at the top of `js/bank/classic.js`) and add its translation under the same id to every `js/i18n/<lang>.js`. Russian is the source language, so Russian text lives in the bank itself.
+
+To add a language, copy `js/i18n/en.js`, translate it, register the code in `ORDER` in `js/i18n.js` and add a `<script>` tag in `index.html`.
